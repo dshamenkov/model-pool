@@ -1,0 +1,13 @@
+services:
+  cliproxy:
+    build: .
+    container_name: model-pool
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8317:8317"  # только localhost
+    volumes:
+      - ./config.yaml:/app/config/config.yaml:ro
+      - ./auths:/app/auths        # OAuth-токены живут здесь
+      - ./logs:/app/logs
+    environment:
+      - TZ=Europe/Moscow

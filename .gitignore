@@ -1,0 +1,13 @@
+# Auth files — never commit
+auths/
+
+# Binary
+cli-proxy-api
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,77 @@
+# ── Пул подписок AI-моделей через CLIProxyAPI ──────────────────────────
+# Одна точка входа (http://127.0.0.1:8317/v1) →
+#   все ваши подписки ChatGPT/Claude/Kimi балансируются автоматически.
+#
+# Порядок настройки:
+#   1. Скачайте бинарник CLIProxyAPI (см. README)
+#   2. Скопируйте этот файл в config.yaml и подставьте свой client-key
+#   3. Запустите: ./cli-proxy-api --config config.yaml
+#   4. Авторизуйте подписки (OAuth-логин в браузере) — см. README
+#   5. Готово: шлюз слушает 127.0.0.1:8317
+
+host: "127.0.0.1"          # только localhost — наружу не светим
+port: 8317
+
+remote-management:
+  allow-remote: false       # только localhost
+  secret-key: ""            # ОСТАВЬТЕ ПУСТЫМ — шлюз сгенерирует при первом запуске
+  disable-control-panel: true
+
+auth-dir: "./auths"         # папка с OAuth-токенами подписок
+
+plugins:
+  enabled: false            # чужой код рядом с токенами — не надо
+
+# ── Ключ клиента ──────────────────────────────────────────────────────
+# СГЕНЕРИРУЙТЕ СВОЙ: openssl rand -hex 32
+# Этим ключом ваши инструменты (Hermes, Codex CLI, Claude Code) ходят в шлюз.
+api-keys:
+  - "ПОДСТАВЬТЕ_СВОЙ_КЛЮЧ_СЮДА"
+
+debug: false
+usage-statistics-enabled: true
+logging-to-file: true
+
+# ── Ретраи и охлаждение ───────────────────────────────────────────────
+request-retry: 3
+max-retry-credentials: 0    # 0 = пробовать все аккаунты пула
+max-retry-interval: 30
+disable-cooling: false
+save-cooldown-status: true  # cooldown переживает рестарт
+
+quota-exceeded:
+  switch-project: true
+  switch-preview-model: true
+
+# ── Балансировка ──────────────────────────────────────────────────────
+routing:
+  strategy: "round-robin"           # равномерный износ аккаунтов
+  session-affinity: true            # один диалог не скачет между аккаунтами
+  session-affinity-ttl: "1h"
+  session-affinity-subagents: true
+
+# ── Codex: маскировка ─────────────────────────────────────────────────
+codex:
+  identity-confuse: true
+  disable-codex-cloaking: false
+
+# ── Фильтр моделей (убрать старые/ненужные из пикера) ─────────────────
+oauth-excluded-models:
+  claude:
+    - "claude-3-*"
+    - "*-2025*"
+    - "claude-opus-4-*"
+    - "claude-sonnet-4-*"
+    - "claude-haiku-*"
+  codex:
+    - "gpt-image-*"
+    - "codex-auto-review"
+    - "gpt-5.4*"
+
+# ── Если есть подписка с API-ключом (не OAuth), например Kimi ─────────
+# claude-api-key:
+#   - api-key: "sk-..."
+#     base-url: "https://api.moonshot.cn/coding"
+#     models:
+#       - name: "kimi-k3"
+#         alias: "kimi-k3"
