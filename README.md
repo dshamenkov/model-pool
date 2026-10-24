@@ -105,6 +105,38 @@ export ANTHROPIC_API_KEY="ваш_клиентский_ключ"
 claude
 ```
 
+### Hermes Agent
+
+Если Hermes уже использует `ANTHROPIC_API_KEY` (прямой API-доступ к Claude через кредиты),
+**не удаляйте его** при добавлении пула. Пул должен быть основным провайдером, а API-ключ —
+резервным. Если пул по любой причине не ответит, Hermes автоматически переключится на API-ключ.
+
+```yaml
+# Полный пример: пул как основной провайдер, API-ключ как резерв
+model:
+  default: claude-sonnet-5-5
+  provider: pool
+  base_url: http://127.0.0.1:8317/v1
+
+providers:
+  pool:
+    name: pool
+    base_url: http://127.0.0.1:8317/v1
+    api_key: ваш_клиентский_ключ        # тот же ключ, что в api-keys пула
+    api_mode: chat_completions
+
+fallback_providers:
+  - provider: anthropic                  # API-ключ как резерв
+    model: claude-sonnet-5-5
+  - provider: openrouter
+    model: google/gemini-3.7-flash
+  - provider: openrouter
+    model: deepseek/deepseek-v4-flash
+```
+
+После изменения `config.yaml` нужен перезапуск: `hermes gateway restart` или
+`systemctl --user restart hermes-gateway.service`.
+
 ### Любой OpenAI-совместимый клиент
 
 ```yaml
